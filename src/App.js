@@ -16,12 +16,20 @@ class App extends Component {
   /* ниже тоже самое только в современном синтаксесе, так как мы не используем  props */
 
   state = {
-    transactions: [],
+    transactions: JSON.parse(localStorage.getItem('calcMoney1')) || [],
     description: '',
     amount: '',
     resultIncome: 0,
     resultExpress: 0,
     totalBalance: 0,
+  }
+
+  componentWillMount() {
+    this.getTotalBalance();
+  }
+
+  componentDidUpdate() {
+      this.addStorage();
   }
 
   addTransaction = add => {
@@ -30,7 +38,7 @@ class App extends Component {
         {
             id: `cmr${(+new Date()).toString(16)}`,
             description: this.state.description,
-            amount: this.state.amount,  
+            amount: parseFloat(this.state.amount),  
             add
         }
     ];
@@ -39,8 +47,10 @@ class App extends Component {
         transactions,
         description: '',
         amount: '',        
-    }, this.getTotalBalance);
-  }
+    }, () => {
+        this.getTotalBalance();        
+    });
+  };
 
   addAmount = e =>  {
     this.setState({amount: parseFloat(e.target.value)}); 
@@ -74,6 +84,15 @@ class App extends Component {
         totalBalance,
       });
   }
+
+  addStorage() {
+    localStorage.setItem('calcMoney1', JSON.stringify(this.state.transactions))      
+  }
+
+  delTransaction = key => {
+      const transactions = this.state.transactions.filter(item => item.id !== key )
+      this.setState({ transactions }, this.getTotalBalance)
+  }
     
   render() {
     return (
@@ -93,6 +112,7 @@ class App extends Component {
                 />
                 <History 
                     transactions={this.state.transactions}
+                    delTransaction={this.delTransaction}
                 />
                 <Operation 
                     addTransaction={this.addTransaction}
